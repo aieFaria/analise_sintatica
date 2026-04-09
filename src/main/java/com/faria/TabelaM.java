@@ -43,18 +43,9 @@ public class TabelaM {
                 JSONObject aux = (JSONObject) tableM.get(chaveNaoTerminal);
                 Set<String> chaves2 = aux.keySet();
                 //System.out.print(chaveNaoTerminal + " | ");
-
-                // Garantir que nenhum Não terminal ficará de fora
-                if(!naoTerminais.contains(chaveNaoTerminal)) {
-                    naoTerminais.add(chaveNaoTerminal);
-                }
                 
                 for(String chaveTerminal: chaves2) {
-                    // Garantir que nenhum terminal ficará de fora
-                    if(!terminais.contains(chaveTerminal)) {
-                        terminais.add(chaveTerminal);
-                    }
-
+        
                     String aux2 = (String) aux.get(chaveTerminal);
                     //System.out.print(aux2+"  | ");
                     tabelaM[naoTerminais.indexOf(chaveNaoTerminal)][terminais.indexOf(chaveTerminal)] = aux2;

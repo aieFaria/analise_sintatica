@@ -12,20 +12,6 @@ public class Main {
         System.out.println(l1.getLinhas());
         System.out.println();
 
-        TabelaM tm = new TabelaM();
-        // tm.gerarTabela();
-        // System.out.println("Inicio: " + tm.getPrimeiroNaoTerminal()); // Para adicionar a pilha
-
-        // for(int i=0; i<tm.getNaoTerminais().size(); i++) {
-        //     for(int j=0; j<tm.getTerminais().size(); j++) {
-               
-        //         System.out.print((tm.getTabelaM()[i][j]));
-        //         System.out.print(" | ");
-        //     }
-        //     System.out.println();
-        // }
-
-
         StringBuilder sbSaida = new StringBuilder();
 
         for(String entrada: l1.getLinhas()) {
@@ -40,7 +26,6 @@ public class Main {
             } else {
                 analisador.setStatus("false");
             }
-
 
             // Escrever a saída para cada entrada
             sbSaida.append(analisador.gerarSaida());

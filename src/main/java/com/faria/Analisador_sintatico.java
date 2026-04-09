@@ -28,6 +28,12 @@ public class Analisador_sintatico {
         this.stack_cronologico = "";
     }
 
+    /**
+     * Principal classe do analisador, responsável pelo processamento do buffer de entrada
+     * 
+     * @param arrayEntrada  Buffer já convertido em Array para iterar sobre os elementos
+     * @return              Retorna true caso a entrada seja válida e false caso contrário
+     */
     public boolean analisar(List<String> arrayEntrada) {
         arrayEntrada.add("$");
 
@@ -35,22 +41,24 @@ public class Analisador_sintatico {
         stack.push("$"); 
         stack.push(tabela.getPrimeiroNaoTerminal());
 
-        int n = 0;
+        int cont = 0;
+        int fatorSeparacao = 0;
         StringBuilder transicao = new StringBuilder();
 
         while( !stack.isEmpty() ) {
             // Olha para o elemento do topo da pilha, não remove da pilha
             String elementPilha = stack.peek();
-            String token = arrayEntrada.get(n);
+            String token = arrayEntrada.get(cont);
+            fatorSeparacao++;
 
-            // Para omitir o "$" da pilha utilize: replace("[$", "[").replace(",", "")
+            // Para omitir o "$" da pilha utilize: replace("[$", "[").replace("[,", "[")
             // isso não remove "$" da pilha pois ainda será usado na lógica
             transicao.append( stack.toString().replace(" ", "").replace("[$", "[").replace("[,", "[") );
 
             // Remoção elemento "null" da pilha
             if( elementPilha.equals("null") ) {
                 stack.pop();
-                transicao.append("  ");
+                transicao.append(",  ");
                 continue;
             }
 
@@ -58,29 +66,39 @@ public class Analisador_sintatico {
 
                 if( elementPilha.equals(token) ) {
                     stack.pop();
-                    n++;
+                    cont++;
                 } else {
-                    return false; // Caso elemento entrada não seja um dos terminais retorna false
+                    transicao.append(",  [erro]");
+                    break; // Caso elemento entrada não seja um dos terminais
                 }
 
             } else {
 
                 if(tabela.getNaoTerminais() == null || !tabela.getNaoTerminais().contains(elementPilha) ) {
-                    // Caso não terminal seja invalido, não esteja contido na lista de naoTerminais retorna false
-                    return false; 
+                    // Caso não terminal seja invalido, não esteja contido na lista de naoTerminais para o laço
+                    transicao.append(",  [erro]");
+                    break; 
                 }
 
                 //System.out.println("Token: " + token + "\n Topo: " + elementPilha);
 
-                String producao = tabela.getTabelaM()[tabela.getNaoTerminais().indexOf(elementPilha)]
-                                                     [tabela.getTerminais().indexOf(token)];
+                int indexNaoTerminal = tabela.getNaoTerminais().indexOf(elementPilha);
+                int indexTerminal = tabela.getTerminais().indexOf(token);
+
+                if (indexTerminal == -1) {
+                    // Simbolo inválido
+                    transicao.append(",  [erro]");
+                    break; 
+                }
+
+                String producao = tabela.getTabelaM()[indexNaoTerminal][indexTerminal];
                 stack.pop(); // Remove o Não-Terminal atual
 
                 if (producao.equals("null")) {
                     // Coloca o null para aparecer no resultado
                     stack.push("null"); 
                 } else {
-                    List<String> simbolos = extrairSimbolosDaProducao(producao);
+                    List<String> simbolos = separaSimbolos(producao);
                     for (int i = simbolos.size() - 1; i >= 0; i--) {
                         stack.push(simbolos.get(i));
                     }
@@ -88,31 +106,88 @@ public class Analisador_sintatico {
 
             }
 
-            transicao.append("  ");
-            if( (n % 10) == 0 ) {
-                //transicao.append("\n    ");
+            // Serve simplesmente para pular linhas na saída "Stack"
+            if( (fatorSeparacao % 5) == 0 ) {
+                transicao.append(",\n    ");
             } else {
-                //transicao.append("  ");
+                transicao.append(",  ");
             }
-            
 
         }
 
         this.stack_cronologico = transicao.toString();
-        return n == arrayEntrada.size();
+        return cont == arrayEntrada.size();
     }
 
-    private static List<String> extrairSimbolosDaProducao(String producao) {
+    // Modificar para separar simbolos com base nos terminais e não terminais assim como feito
+    // no método @link{#gerarBuff   erEntrada}
+    private List<String> separaSimbolos(String producao) {
         List<String> simbolos = new ArrayList<>();
-        for (int i = 0; i < producao.length(); i++) {
-            if (producao.startsWith("id", i)) {
-                simbolos.add("id");
-                i++; 
+
+        StringBuilder regex = geraRegex();
+
+        //System.out.println(regex.toString().replace("|)", ")") + "(.*)"); // Para verificar a regex final
+        Pattern pattern = Pattern.compile(regex.toString().replace("|)", ")") + "(.*)");
+
+        while(producao.length()!=0) {
+
+            Matcher matcherGeral = pattern.matcher(producao);
+
+            if( matcherGeral.find() ) {
+                simbolos.add(matcherGeral.group(1));
+                producao = matcherGeral.group(2);
             } else {
-                simbolos.add(String.valueOf(producao.charAt(i)));
+                // Tratativa para simbolos que fogem do padrão
+                simbolos.add(""+producao.charAt(0));
+                producao = producao.substring(1, producao.length());
             }
         }
+
         return simbolos;
+    }
+
+    // Método auxiliar para criar a Regex
+    private StringBuilder geraRegex() {
+        StringBuilder regex = new StringBuilder();
+        List<String> metacaracteres = new ArrayList<>(Arrays.asList(".", "^", "$", "(", ")", "\\", "*", "+", "?", "[", "], {", "}", "|"));
+
+        // Laço para criação da REGEX que localiza os terminais
+        int tamanho = tabela.getTerminais().size();
+        for(int i=0; i<tamanho; i++) {
+            
+            if(i==0) {
+                regex.append("^(");
+            }
+
+            if(tabela.getTerminais().get(i).equals("$")) {
+                // Pulando caractere de final da stack
+            } else if(metacaracteres.contains(tabela.getTerminais().get(i))){
+                regex.append("\\" + tabela.getTerminais().get(i) + "|");
+            } else {
+                regex.append(tabela.getTerminais().get(i) + "|");
+            }
+
+        }
+
+        // Laço para criação da REGEX que localiza os não terminais
+        int tamanho2 = tabela.getNaoTerminais().size();
+        for(int i=0; i<tamanho2; i++) {
+
+            if(tabela.getNaoTerminais().get(i).equals("$")) {
+                // Pula
+            } else if ( metacaracteres.contains(tabela.getNaoTerminais().get(i)) ) {
+                regex.append("\\" + tabela.getNaoTerminais().get(i) + "|");
+            } else {
+                regex.append(tabela.getNaoTerminais().get(i) + "|");
+            }
+
+            if(i==tamanho2-1) {
+                regex.append(")");
+                //continue;
+            }
+        }
+
+        return regex;
     }
 
     /**
@@ -148,6 +223,9 @@ public class Analisador_sintatico {
         Pattern patternFinal = Pattern.compile("^\\$");
         Matcher matcherFinal = patternFinal.matcher(texto);
         // Pattern.compile("^(id|\\*|\\+|\\(|\\))");
+
+        System.out.println(tabela.getNaoTerminais());
+        System.out.println(tabela.getTerminais());
 
         // Laço para criação da REGEX que localiza os terminais
         int tamanho = tm.getTerminais().size();
@@ -188,6 +266,10 @@ public class Analisador_sintatico {
             if( matcherGeral.find() ) {
                 bufferEntrada.add(matcherGeral.group(1));
                 texto = matcherGeral.group(2);
+            } else {
+                // Tratativa para simbolos que fogem do padrão
+                bufferEntrada.add(""+texto.charAt(0));
+                texto = texto.substring(1, texto.length());
             }
         }
 
