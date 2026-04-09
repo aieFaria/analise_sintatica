@@ -1,8 +1,10 @@
 package com.faria;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
@@ -60,7 +62,7 @@ public class LeitorTxt {
     }
 
     /**
-     * A ideia é gerar um log de erro contendo ponto exato que foi encontrado a falha
+     * Lista para iteração
      * 
      * @return  Retorna a lista de linhas
      */
@@ -71,8 +73,25 @@ public class LeitorTxt {
         } else {
             return this.linhasEntrada;
         }
-        
 
     }
+
+    /**
+     * Método para geração do arquivo de saída 
+     */
+    public static void writeSaida(String saida) {
+
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter("saida.txt"));
+            writer.write(saida);
+            writer.close();
+        } catch (IOException e) {
+            System.out.println("Não foi possivel gerar o arquivo de saída, devido à: ");
+            e.getStackTrace();
+
+        }
+
+    }
+
     
 }

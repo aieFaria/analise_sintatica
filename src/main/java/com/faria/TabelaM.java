@@ -62,8 +62,8 @@ public class TabelaM {
                 //System.out.println();
             }
 
-            System.out.println("  " + naoTerminais);
-            System.out.println("  " + terminais);
+            // System.out.println("  " + naoTerminais);
+            // System.out.println("  " + terminais);
 
         } catch (Exception e) {
             System.out.println("Algo deu errado!");
@@ -117,6 +117,6 @@ public class TabelaM {
         this.primeiroNaoTerminal = primeiroNaoTerminal;
     }
 
-    
+
     
 }
