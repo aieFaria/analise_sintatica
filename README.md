@@ -51,6 +51,44 @@ sequência de símbolos da gramática, uma tabela de análise e um fluxo de saí
 
 ## 👷 Desenvolvimento
 
+
+A gramática empregada para a análise sintática descendente é apresentada a seguir.:
+
+<div align="center">
+     <img src="./untracked/image.png" alt="GLC do projeto">
+</div>
+
+
+O dicionário "/untracked/dicionario_linguagem.json" contém: os valores terminais e não terminais; a gramática; os elementos first e follow; e a tabela M da GLC. 
+###### Esse dicionário obrigatoriamente deverá ser usado em seu código. 
+
+<div align="center">
+     <img src="./untracked/image2.png" alt="Dicionário">
+</div>
+
+O objetivo será ler como entrada um arquivo de texto de instruções dispostos linha
+a linha. O programa deverá realizar a análise sintática descendente de todos os comandos.
+Deverá ser gerado um arquivo de texto de saída. Esse arquivo deverá conter: cada
+comando; se esse comando é válido; e execução da pilha passo a passo.
+#### Exemplo de entrada: 
+```
+id*id
+id*id+(id+id)
+(id+id)*(id+id)
+```
+
+#### Exemplo de um arquivo de saída:
+```
+Input: id+id*id
+Status: true
+Stack: [
+ [E], [X,T], [X,Y,F], [X,Y,id], [X,Y],
+ [X,null], [X], [X, T, +], [X, T], [X, Y, F],
+ [X, Y, id], [X, Y], [X, Y, F, *], [X, Y, F],
+ [X, Y, id], [X, Y], [X, null], [X], [null], []
+] 
+```
+
 1.  ### 📚 Principais Classes
 Descreve o funcionamento das principais classes do projeto.
 
@@ -62,7 +100,7 @@ Criador de diagramas: https://app.diagrams.net/?splash=0#G1MNDvqLwhnGeQRzdopsxT-
 Pix Script
 
 ## 🔧 Como executar?
-📁 A pasta "untracked" dispõe de arquivos de exemplo para validação dos testes do projeto. Por tanto é de suma importância mante-lo ativo até a finalização.
+📁 A pasta "untracked" contém os arquivos que estão empregados no projeto em vários níveis, desde a implmentação do código quando das imagens do README.
 
 
 Pontos importantes a descrever:
